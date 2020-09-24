@@ -3,15 +3,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class Lap {
+  static int lapsCounter = 0;
+  int lapId;
   int hours;
   int minutes;
   int seconds;
   int lapCount;
-  Lap(this.hours, this.minutes, this.seconds, this.lapCount);
+  Lap(this.hours, this.minutes, this.seconds, this.lapCount) {
+    this.lapId = Lap.lapsCounter++;
+  }
 }
 
 class StopWatch extends StatefulWidget {
   final Function(StopWatch) removeStopWatch;
+  final List<Lap> laps = [];
 
   StopWatch(
     this.removeStopWatch, {
@@ -28,7 +33,6 @@ class _StopWatchState extends State<StopWatch> {
   int minutes = 0;
   int seconds = 0;
 
-  final List<Lap> laps = [];
 
   Timer timer;
 
@@ -75,8 +79,8 @@ class _StopWatchState extends State<StopWatch> {
 
   void lap() {
     setState(() {
-      laps.add(new Lap(
-          this.hours, this.minutes, this.seconds, this.laps.length + 1));
+      widget.laps.add(new Lap(
+          this.hours, this.minutes, this.seconds, widget.laps.length + 1));
     });
   }
 
@@ -95,7 +99,7 @@ class _StopWatchState extends State<StopWatch> {
         children: [
           Container(
             margin: EdgeInsets.only(left: 16, top: 8, bottom: 8),
-            child: Text("#${lap.lapCount}:",
+            child: Text("#${lap.lapCount}:::${lap.lapId}:::",
                 style: TextStyle(
                   fontSize: 25.0,
                 )),
@@ -115,7 +119,7 @@ class _StopWatchState extends State<StopWatch> {
   Widget build(BuildContext context) {
     return Container(
         height:
-            double.parse('${laps.length > 0 ? 100 + (laps.length * 45) : 75}'),
+            double.parse('${widget.laps.length > 0 ? 100 + (widget.laps.length * 45) : 75}'),
         child: Flex(
             direction: Axis.vertical,
             mainAxisSize: MainAxisSize.max,
@@ -152,7 +156,7 @@ class _StopWatchState extends State<StopWatch> {
                       onPressed: () => {widget.removeStopWatch(widget)},
                     ),
                   ]),
-              if (laps.length > 0)
+              if (widget.laps.length > 0)
                 Text('Laps',
                     style: TextStyle(color: Colors.grey, fontSize: 16)),
               Expanded(
@@ -164,9 +168,9 @@ class _StopWatchState extends State<StopWatch> {
                           top: 16.0,
                           bottom: 16.0,
                         ),
-                        itemCount: laps.length,
+                        itemCount: widget.laps.length,
                         itemBuilder: (BuildContext ctxt, int index) =>
-                            generateLap(laps[index]))),
+                            generateLap(widget.laps[index]))),
               ),
               Divider(
                 color: Colors.black,

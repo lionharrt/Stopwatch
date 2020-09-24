@@ -37,18 +37,21 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void printStopWatches() {
+    stopwatches.asMap().forEach((index, StopWatch value) {
+      print('$index ${value.hashCode}');
+    });
+  }
+
   void removeStopWatch(StopWatch stopwatch) {
     final int index = stopwatches.indexOf(stopwatch);
     print('index: $index');
-    stopwatches.asMap().forEach((index, value) {
-      print('$index ${value.hashCode}');
-    });
+    printStopWatches();
     print('----------------------');
-    stopwatches.removeAt(index);
-    stopwatches.asMap().forEach((index, value) {
-      print('$index ${value.hashCode}');
+    setState(() {
+      stopwatches.removeAt(index);
+      printStopWatches();
     });
-    setState(() {});
   }
 
   void removeAllStopWatches() {
