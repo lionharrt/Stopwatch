@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 
 class HourGlassTimerPage extends StatefulWidget {
+  final List<Duration> frequentTimers = [
+    Duration(minutes: 5),
+    Duration(minutes: 10),
+    Duration(minutes: 15)
+  ];
   HourGlassTimerPage({Key key}) : super(key: key);
 
   @override
@@ -23,6 +28,7 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
   Timer timer;
   Stopwatch nativeStopWatch;
 
+  bool showFrequentTimers = false;
   bool isStarted = false;
   bool isPaused = false;
   bool isFinished = false;
@@ -102,6 +108,33 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     play();
   }
 
+  void toggleShowFrequentTimers() {
+    setState(() {
+      showFrequentTimers = !showFrequentTimers;
+    });
+  }
+
+  void setTimeFromFrequent(int minutes) {
+    setState(() {
+      dateTime = DateTime(0, 0, 0, 0, minutes);
+      originalDuration = Duration(minutes: minutes);
+    });
+    print(dateTime);
+  }
+
+  void stop() {
+    timer.cancel();
+    controller.reset();
+    nativeStopWatch = null;
+    setState(() {
+      originalDuration = Duration();
+      changingDuration = Duration();
+      isStarted = false;
+      isPaused = false;
+      isFinished = false;
+    });
+  }
+
   void _tick() {
     timer = Timer.periodic(Duration(milliseconds: 200), (Timer timer) {
       // if stopwatch is not created  ? start
@@ -109,7 +142,7 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
         nativeStopWatch = Stopwatch();
         nativeStopWatch.start();
       }
-      if (changingDuration.inMilliseconds < 250) {
+      if (changingDuration.inMilliseconds < 350) {
         setState(() {
           changingDuration = Duration(
               milliseconds: originalDuration.inMilliseconds -
@@ -126,24 +159,29 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     });
   }
 
-  void stop() {
-    timer.cancel();
-    controller.reset();
-    nativeStopWatch = null;
-    setState(() {
-      originalDuration = Duration();
-      changingDuration = Duration();
-      isStarted = false;
-      isPaused = false;
-      isFinished = false;
-    });
-  }
-
   //-----------------Widgets--------------------//
-  Widget getButton(IconData icon, Alignment alignment, EdgeInsets margin,
-      Function method, BuildContext context) {
+  Widget getIconButton(
+      {IconData icon,
+      Alignment alignment,
+      EdgeInsets margin,
+      Function method,
+      double size,
+      BuildContext context}) {
     ThemeData themeData = Theme.of(context);
 
+    if (alignment == null) {
+      return Container(
+        margin: margin,
+        child: RawMaterialButton(
+          onPressed: () => method(),
+          elevation: 2.0,
+          fillColor: themeData.accentColor,
+          child: Icon(icon, size: size, color: themeData.accentIconTheme.color),
+          padding: EdgeInsets.all(15.0),
+          shape: CircleBorder(),
+        ),
+      );
+    }
     return Align(
         alignment: alignment,
         child: Container(
@@ -153,11 +191,31 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
             elevation: 2.0,
             fillColor: themeData.accentColor,
             child:
-                Icon(icon, size: 35.0, color: themeData.accentIconTheme.color),
+                Icon(icon, size: size, color: themeData.accentIconTheme.color),
             padding: EdgeInsets.all(15.0),
             shape: CircleBorder(),
           ),
         ));
+  }
+
+  Widget getNumberButton(
+      int number, EdgeInsets margin, Function method, BuildContext context) {
+    ThemeData themeData = Theme.of(context);
+    return Container(
+      margin: margin,
+      child: RawMaterialButton(
+        onPressed: () => method(number),
+        elevation: 2.0,
+        fillColor: themeData.accentColor,
+        child: Column(children: [
+          Text('$number',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25)),
+          Text('mins', style: TextStyle(fontWeight: FontWeight.w400))
+        ]),
+        padding: EdgeInsets.all(12),
+        shape: CircleBorder(),
+      ),
+    );
   }
 
   Widget getTimePicker() {
@@ -167,6 +225,8 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
             margin: EdgeInsets.only(top: 100),
             child: TimePickerSpinner(
               time: dateTime,
+              spacing: 5,
+              isForce2Digits: true,
               itemWidth: 80,
               itemHeight: 80,
               alignment: Alignment.center,
@@ -230,6 +290,30 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
               )
             ]));
   }
+
+  Widget getFrequentTimerButtons(context) {
+    List<Widget> frequentTimers = [];
+    widget.frequentTimers.forEach((e) {
+      frequentTimers.add(getNumberButton(e.inMinutes,
+          EdgeInsets.only(bottom: 120), setTimeFromFrequent, context));
+    });
+    frequentTimers.add(getIconButton(
+        icon: Icons.add,
+        alignment: null,
+        margin: EdgeInsets.only(bottom: 120),
+        method: toggleShowFrequentTimers,
+        size: 25,
+        context: context));
+
+    return Container(
+        alignment: Alignment.bottomCenter,
+        child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Wrap(
+                direction: Axis.horizontal,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: frequentTimers)));
+  }
   //-----------------Build--------------------//
 
   @override
@@ -242,19 +326,57 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
             builder: (context, child) => Stack(children: [
                   if (!isStarted) getTimePicker(),
                   if (isStarted) getAnimatedCountdown(context),
-                  if (!isFinished)
-                    getButton(
-                        controller.isAnimating ? Icons.pause : Icons.play_arrow,
-                        Alignment.bottomCenter,
-                        EdgeInsets.only(bottom: 20),
-                        play,
-                        context),
-                  if (!isFinished)
-                    getButton(Icons.stop, Alignment.bottomRight,
-                        EdgeInsets.only(right: 45, bottom: 20), stop, context),
-                  if (isFinished)
-                    getButton(Icons.replay, Alignment.bottomCenter,
-                        EdgeInsets.only(bottom: 20), repeat, context)
+                  if (!isStarted && showFrequentTimers)
+                    getFrequentTimerButtons(context),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (!isFinished)
+                        Expanded(
+                            child: getIconButton(
+                                icon: controller.isAnimating
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                                alignment: Alignment.bottomCenter,
+                                margin: EdgeInsets.only(left: 135, bottom: 20),
+                                method: play,
+                                size: 35,
+                                context: context)),
+                      if (!isStarted)
+                        getIconButton(
+                            icon: Icons.add,
+                            alignment: Alignment.bottomRight,
+                            margin: EdgeInsets.only(right: 45, bottom: 20),
+                            method: toggleShowFrequentTimers,
+                            size: 35,
+                            context: context),
+                      if (!isFinished && isStarted)
+                        getIconButton(
+                            icon: Icons.stop,
+                            alignment: Alignment.bottomRight,
+                            margin: EdgeInsets.only(right: 45, bottom: 20),
+                            method: stop,
+                            size: 35,
+                            context: context),
+                      if (isFinished)
+                        Expanded(
+                            child: getIconButton(
+                                icon: Icons.replay,
+                                alignment: Alignment.bottomCenter,
+                                margin: EdgeInsets.only(left: 135, bottom: 20),
+                                method: repeat,
+                                size: 35,
+                                context: context)),
+                      if (isFinished)
+                        getIconButton(
+                            icon: Icons.keyboard_return,
+                            alignment: Alignment.bottomCenter,
+                            margin: EdgeInsets.only(right: 45, bottom: 20),
+                            method: stop,
+                            size: 35,
+                            context: context)
+                    ],
+                  )
                 ])));
   }
 }
