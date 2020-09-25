@@ -14,9 +14,14 @@ class HourGlassTimerPage extends StatefulWidget {
 
 class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     with TickerProviderStateMixin {
+  //-----------------Properties--------------------//
   AnimationController controller;
-  Duration duration = Duration();
+
+  Duration originalDuration = Duration();
+  Duration changingDuration = Duration();
+
   Timer timer;
+  Stopwatch nativeStopWatch;
 
   bool isStarted = false;
   bool isPaused = false;
@@ -29,96 +34,126 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     super.initState();
     controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 5),
+      duration: Duration(),
     );
   }
 
+  @override
+  void dispose() {
+    timer.cancel();
+    controller.dispose();
+    super.dispose();
+  }
+
   //-----------------Methods--------------------//
-  String formatNumber(int input) {
-    if (input <= 9) {
-      return "0$input";
-    } else if (input > 99 && input < 999) {
-      return "0$input".substring(1, 3);
-    } else if (input > 999) {
-      return "$input".substring(1, 3);
-    }
-    return "$input";
+  String formatTime() {
+    String hours = changingDuration.inHours < 10
+        ? '0${changingDuration.inHours}'
+        : '${changingDuration.inHours}';
+    String minutes = changingDuration.inMinutes % 60 < 10
+        ? '0${changingDuration.inMinutes % 60}'
+        : '${changingDuration.inMinutes % 60}';
+    String seconds = changingDuration.inSeconds % 60 < 10
+        ? '0${changingDuration.inSeconds % 60}'
+        : '${changingDuration.inSeconds % 60}';
+
+    print("$hours:$minutes:$seconds");
+    return "$hours:$minutes:$seconds";
   }
 
   void play() {
-    controller.duration = duration;
-    if (controller.isAnimating)
-      controller.stop();
-    else {
-      controller.reverse(
-          from: controller.value == 0.0 ? 1.0 : controller.value);
-    }
-
-    if (isPaused || !isStarted && !isFinished) {
-      isStarted = true;
-      isPaused = false;
-      timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-        if (duration.inSeconds == 0) {
-          setState(() {
-            isFinished = true;
-          });
-          timer.cancel();
-        } else {}
+    if (originalDuration.inSeconds >= 1) {
+      controller.duration = originalDuration;
+      // --- handle animation --- //
+      if (controller.isAnimating)
+        controller.stop();
+      else {
+        controller.reverse(
+            from: controller.value == 0.0 ? 1.0 : controller.value);
+      }
+      // --- handle time --- //
+      if (!isStarted) {
         setState(() {
-          duration = Duration(seconds: duration.inSeconds - 1);
+          changingDuration = originalDuration;
+          isStarted = true;
         });
-      });
-    } else {
-      setState(() {
-        isPaused = true;
-      });
-      timer.cancel();
+        _tick();
+      } else if (isPaused && !isFinished) {
+        setState(() {
+          isPaused = false;
+        });
+        nativeStopWatch.start();
+        _tick();
+      } else {
+        // pausing
+        setState(() {
+          nativeStopWatch.stop();
+          isPaused = true;
+        });
+        timer.cancel();
+      }
     }
   }
 
-  void goBack() {
+  void repeat() {
     setState(() {
-      this.isStarted = false;
-      this.isPaused = false;
-      this.isFinished = false;
+      isFinished = false;
+    });
+    play();
+  }
+
+  void _tick() {
+    timer = Timer.periodic(Duration(milliseconds: 200), (Timer timer) {
+      // if stopwatch is not created  ? start
+      if (nativeStopWatch == null) {
+        nativeStopWatch = Stopwatch();
+        nativeStopWatch.start();
+      }
+      if (changingDuration.inMilliseconds < 250) {
+        setState(() {
+          changingDuration = Duration(
+              milliseconds: originalDuration.inMilliseconds -
+                  nativeStopWatch.elapsedMilliseconds);
+          isFinished = true;
+        });
+        timer.cancel();
+      } else {}
+      setState(() {
+        changingDuration = Duration(
+            milliseconds: originalDuration.inMilliseconds -
+                nativeStopWatch.elapsedMilliseconds);
+      });
+    });
+  }
+
+  void stop() {
+    timer.cancel();
+    controller.reset();
+    nativeStopWatch = null;
+    setState(() {
+      originalDuration = Duration();
+      changingDuration = Duration();
+      isStarted = false;
+      isPaused = false;
+      isFinished = false;
     });
   }
 
   //-----------------Widgets--------------------//
-  Widget getPlayButton() {
-    return Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          margin: EdgeInsets.only(bottom: 20),
-          child: RawMaterialButton(
-            onPressed: () => play(),
-            elevation: 2.0,
-            fillColor: Colors.grey[800],
-            child: Icon(
-              Icons.play_arrow,
-              size: 35.0,
-              color: Colors.white,
-            ),
-            padding: EdgeInsets.all(15.0),
-            shape: CircleBorder(),
-          ),
-        ));
-  }
+  Widget getButton(IconData icon, Alignment alignment, EdgeInsets margin,
+      Function method, BuildContext context) {
+    ThemeData themeData = Theme.of(context);
 
-  Widget getBackButton() {
     return Align(
-        alignment: Alignment.bottomLeft,
+        alignment: alignment,
         child: Container(
-          margin: EdgeInsets.only(left: 45, bottom: 20),
+          margin: margin,
           child: RawMaterialButton(
-            onPressed: () => {},
+            onPressed: () => method(),
             elevation: 2.0,
-            fillColor: Colors.grey[800],
-            child: Icon(
-              Icons.arrow_back,
-              size: 35.0,
-              color: Colors.white,
-            ),
+            fillColor: themeData.accentColor,
+            child:
+                Icon(icon, size: 35.0, color: themeData.accentIconTheme.color),
             padding: EdgeInsets.all(15.0),
             shape: CircleBorder(),
           ),
@@ -143,7 +178,7 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
               isShowSeconds: true,
               onTimeChange: (time) {
                 setState(() {
-                  duration = Duration(
+                  originalDuration = Duration(
                       hours: time.hour,
                       minutes: time.minute,
                       seconds: time.second);
@@ -181,12 +216,7 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                "Count Down Timer",
-                                style: TextStyle(
-                                    fontSize: 20.0, color: Colors.black),
-                              ),
-                              Text(
-                                "${formatNumber(duration.inHours)}:${formatNumber(duration.inMinutes)}:${formatNumber(duration.inSeconds)}",
+                                isFinished ? 'Finished' : formatTime(),
                                 style: TextStyle(
                                     fontSize: 60.0, color: Colors.black),
                               ),
@@ -204,15 +234,27 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
 
   @override
   Widget build(BuildContext context) {
+    ThemeData themeData = Theme.of(context);
     return Scaffold(
-        backgroundColor: Colors.white10,
+        backgroundColor: themeData.backgroundColor,
         body: AnimatedBuilder(
             animation: controller,
             builder: (context, child) => Stack(children: [
                   if (!isStarted) getTimePicker(),
                   if (isStarted) getAnimatedCountdown(context),
-                  getPlayButton(),
-                  getBackButton()
+                  if (!isFinished)
+                    getButton(
+                        controller.isAnimating ? Icons.pause : Icons.play_arrow,
+                        Alignment.bottomCenter,
+                        EdgeInsets.only(bottom: 20),
+                        play,
+                        context),
+                  if (!isFinished)
+                    getButton(Icons.stop, Alignment.bottomRight,
+                        EdgeInsets.only(right: 45, bottom: 20), stop, context),
+                  if (isFinished)
+                    getButton(Icons.replay, Alignment.bottomCenter,
+                        EdgeInsets.only(bottom: 20), repeat, context)
                 ])));
   }
 }

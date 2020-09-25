@@ -33,12 +33,6 @@ class _StopWatchPageState extends State<StopWatchPage> {
     });
   }
 
-  // void printStopWatches() {
-  //   stopwatches.asMap().forEach((index, StopWatchWidget value) {
-  //     print('$index ${value.hashCode}');
-  //   });
-  // }
-
   void removeStopWatch(StopWatch stopwatch) {
     final int index = stopwatches.indexOf(stopwatch);
     setState(() {
@@ -54,7 +48,9 @@ class _StopWatchPageState extends State<StopWatchPage> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData themeData = Theme.of(context);
     return Scaffold(
+      backgroundColor: themeData.backgroundColor,
       body: Center(
           child: ListView.builder(
               padding: const EdgeInsets.only(
