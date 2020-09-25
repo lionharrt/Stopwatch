@@ -2,76 +2,115 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+class StopWatch {
+  List<Lap> laps = [];
+  Duration duration = Duration();
+}
+
 class Lap {
   static int lapsCounter = 0;
   int lapId;
-  int hours;
-  int minutes;
-  int seconds;
+  Duration duration;
   int lapCount;
-  Lap(this.hours, this.minutes, this.seconds, this.lapCount) {
-    this.lapId = Lap.lapsCounter++;
+  Lap(this.duration, this.lapCount);
+}
+
+class StopWatchPage extends StatefulWidget {
+  StopWatchPage({Key key, this.title}) : super(key: key);
+  final String title;
+
+  @override
+  _StopWatchPageState createState() => _StopWatchPageState();
+}
+
+class _StopWatchPageState extends State<StopWatchPage> {
+  final List<StopWatch> stopwatches = [];
+  // final List<StopWatchWidget> stopwatches = [];
+
+  void addStopWatch() {
+    setState(() {
+      stopwatches.add(StopWatch());
+    });
+  }
+
+  // void printStopWatches() {
+  //   stopwatches.asMap().forEach((index, StopWatchWidget value) {
+  //     print('$index ${value.hashCode}');
+  //   });
+  // }
+
+  void removeStopWatch(StopWatch stopwatch) {
+    final int index = stopwatches.indexOf(stopwatch);
+    setState(() {
+      stopwatches.removeAt(index);
+    });
+  }
+
+  void removeAllStopWatches() {
+    setState(() {
+      stopwatches.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+          child: ListView.builder(
+              padding: const EdgeInsets.only(
+                top: 16.0,
+                bottom: 16.0,
+              ),
+              itemCount: stopwatches.length,
+              itemBuilder: (BuildContext ctxt, int index) {
+                return StopWatchWidget(stopwatches[index], removeStopWatch);
+              })),
+      floatingActionButton: FloatingActionButton(
+        onPressed: addStopWatch,
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
 }
 
-class StopWatch extends StatefulWidget {
+class StopWatchWidget extends StatefulWidget {
   final Function(StopWatch) removeStopWatch;
-  final List<Lap> laps = [];
+  final StopWatch stopWatch;
 
-  StopWatch(
-    this.removeStopWatch, {
-    Key key,
-  }) : super(key: key);
+  StopWatchWidget(this.stopWatch, this.removeStopWatch, {Key key})
+      : super(key: key);
 
   @override
-  _StopWatchState createState() => _StopWatchState();
+  _StopWatchWidgetState createState() => _StopWatchWidgetState();
 }
 
-class _StopWatchState extends State<StopWatch> {
-  bool isPlaying = false;
-  int hours = 0;
-  int minutes = 0;
-  int seconds = 0;
-
-
+class _StopWatchWidgetState extends State<StopWatchWidget> {
+  bool isStopped = true;
   Timer timer;
 
   String formatNumber(int input) {
     if (input <= 9) {
       return "0$input";
+    } else if (input > 99 && input < 999) {
+      return "0$input".substring(1, 3);
+    } else if (input > 999) {
+      return "$input".substring(1, 3);
     }
     return "$input";
   }
 
   void play() {
-    if (!isPlaying) {
-      setState(() {
-        isPlaying = true;
-      });
-      timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-        if (seconds == 59) {
-          setState(() {
-            seconds = 0;
-          });
-          if (minutes == 59) {
-            setState(() {
-              minutes = 0;
-              hours++;
-            });
-          } else {
-            setState(() {
-              minutes++;
-            });
-          }
-        } else {
-          setState(() {
-            seconds++;
-          });
-        }
+    if (isStopped) {
+      isStopped = false;
+      timer = Timer.periodic(Duration(milliseconds: 10), (Timer timer) {
+        widget.stopWatch.duration = Duration(
+            milliseconds: widget.stopWatch.duration.inMilliseconds + 10);
+        setState(() {});
       });
     } else {
       setState(() {
-        isPlaying = false;
+        isStopped = true;
       });
       timer.cancel();
     }
@@ -79,8 +118,8 @@ class _StopWatchState extends State<StopWatch> {
 
   void lap() {
     setState(() {
-      widget.laps.add(new Lap(
-          this.hours, this.minutes, this.seconds, widget.laps.length + 1));
+      widget.stopWatch.laps.add(
+          Lap(widget.stopWatch.duration, widget.stopWatch.laps.length + 1));
     });
   }
 
@@ -99,7 +138,7 @@ class _StopWatchState extends State<StopWatch> {
         children: [
           Container(
             margin: EdgeInsets.only(left: 16, top: 8, bottom: 8),
-            child: Text("#${lap.lapCount}:::${lap.lapId}:::",
+            child: Text("#${lap.lapCount}",
                 style: TextStyle(
                   fontSize: 25.0,
                 )),
@@ -107,7 +146,7 @@ class _StopWatchState extends State<StopWatch> {
           Container(
             margin: EdgeInsets.only(right: 16),
             child: Text(
-                "${formatNumber(lap.hours)}:${formatNumber(lap.minutes)}:${formatNumber(lap.seconds)}",
+                "${formatNumber(lap.duration.inMinutes)}:${formatNumber(lap.duration.inSeconds)}:${formatNumber(lap.duration.inMilliseconds)}",
                 style: TextStyle(
                   fontSize: 25.0,
                 )),
@@ -118,8 +157,8 @@ class _StopWatchState extends State<StopWatch> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        height:
-            double.parse('${widget.laps.length > 0 ? 100 + (widget.laps.length * 45) : 75}'),
+        height: double.parse(
+            '${widget.stopWatch.laps.length > 0 ? 110 + (widget.stopWatch.laps.length * 45) : 75}'),
         child: Flex(
             direction: Axis.vertical,
             mainAxisSize: MainAxisSize.max,
@@ -132,33 +171,37 @@ class _StopWatchState extends State<StopWatch> {
                         margin: EdgeInsets.only(left: 16),
                         child: Center(
                           child: Text(
-                            "${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}",
+                            "${formatNumber(widget.stopWatch.duration.inMinutes)}:${formatNumber(widget.stopWatch.duration.inSeconds)}:${formatNumber(widget.stopWatch.duration.inMilliseconds)}",
                             style: TextStyle(
                               fontSize: 35.0,
                             ),
                           ),
                         )),
                     Spacer(),
-                    Text('${widget.hashCode}'),
                     IconButton(
                       icon: Icon(Icons.assistant_photo),
                       tooltip: 'Lap',
                       onPressed: () => lap(),
                     ),
                     IconButton(
-                      icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                      icon: Icon(isStopped ? Icons.play_arrow : Icons.pause),
                       tooltip: 'Play',
                       onPressed: () => play(),
                     ),
                     IconButton(
                       icon: Icon(Icons.delete_outline),
                       tooltip: 'Delete Stopwatch',
-                      onPressed: () => {widget.removeStopWatch(widget)},
+                      onPressed: () =>
+                          {widget.removeStopWatch(widget.stopWatch)},
                     ),
                   ]),
-              if (widget.laps.length > 0)
+              if (widget.stopWatch.laps.length > 0)
                 Text('Laps',
                     style: TextStyle(color: Colors.grey, fontSize: 16)),
+              if (widget.stopWatch.laps.length > 0)
+                Divider(
+                  indent: 1,
+                ),
               Expanded(
                 child: SizedBox(
                     height: 200.0,
@@ -168,9 +211,9 @@ class _StopWatchState extends State<StopWatch> {
                           top: 16.0,
                           bottom: 16.0,
                         ),
-                        itemCount: widget.laps.length,
+                        itemCount: widget.stopWatch.laps.length,
                         itemBuilder: (BuildContext ctxt, int index) =>
-                            generateLap(widget.laps[index]))),
+                            generateLap(widget.stopWatch.laps[index]))),
               ),
               Divider(
                 color: Colors.black,

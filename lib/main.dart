@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/stopwatch.dart';
+import 'package:hello_world/timer.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,85 +11,60 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'StopWatch',
+      // title: 'StopWatch',
       theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
+        primarySwatch: Colors.amber,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'StopWatch'),
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
+class HomePage extends StatefulWidget {
+  HomePage({Key key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final List<StopWatch> stopwatches = [];
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
+  TabController tabController;
 
-  void addStopWatch() {
-    setState(() {
-      stopwatches.add(StopWatch(removeStopWatch));
-    });
+  @override
+  void initState() {
+    super.initState();
+
+    tabController = TabController(length: 2, vsync: this);
   }
 
-  void printStopWatches() {
-    stopwatches.asMap().forEach((index, StopWatch value) {
-      print('$index ${value.hashCode}');
-    });
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
   }
 
-  void removeStopWatch(StopWatch stopwatch) {
-    final int index = stopwatches.indexOf(stopwatch);
-    print('index: $index');
-    printStopWatches();
-    print('----------------------');
-    setState(() {
-      stopwatches.removeAt(index);
-      printStopWatches();
-    });
+  Widget getTabBar() {
+    return TabBar(controller: tabController, tabs: [
+      Tab(icon: Icon(Icons.timer)),
+      Tab(icon: Icon(Icons.access_time)),
+    ]);
   }
 
-  void removeAllStopWatches() {
-    setState(() {
-      stopwatches.clear();
-    });
+  Widget getTabBarPages() {
+    return TabBarView(controller: tabController, children: <Widget>[
+      StopWatchPage(),
+      HourGlassTimerPage(),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text(widget.title)),
-        actions: [
-          IconButton(
-              icon: Icon(
-                Icons.delete_forever,
-                color: Colors.deepOrangeAccent[800],
-              ),
-              onPressed: removeAllStopWatches)
-        ],
-      ),
-      body: Center(
-          child: ListView.builder(
-              padding: const EdgeInsets.only(
-                top: 16.0,
-                bottom: 16.0,
-              ),
-              itemCount: stopwatches.length,
-              itemBuilder: (BuildContext ctxt, int index) {
-                return stopwatches[index];
-              })),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addStopWatch,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        appBar: AppBar(
+          toolbarHeight: 80,
+          bottom: getTabBar(),
+        ),
+        body: getTabBarPages());
   }
 }
