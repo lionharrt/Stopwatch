@@ -164,15 +164,15 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
   }
 
   Widget getText() {
-    return Expanded(
-        child: Container(
-            alignment: Alignment.bottomCenter,
-            child: Text(
-              formatTime(widget.stopWatch.duration),
-              style: TextStyle(
-                fontSize: 60.0,
-              ),
-            )));
+    return Container(
+        alignment: Alignment.bottomCenter,
+        margin: EdgeInsets.only(top: 50),
+        child: Text(
+          formatTime(widget.stopWatch.duration),
+          style: TextStyle(
+            fontSize: 60.0,
+          ),
+        ));
   }
 
   Widget getButtons(ThemeData themeData) {
@@ -216,20 +216,16 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
   }
 
   Widget getLapsBuilder() {
-    return Flex(
-      direction: Axis.vertical,
-      children: [
-        SizedBox(
-          child: new ListView.builder(
-              padding: const EdgeInsets.only(
-                top: 16.0,
-                bottom: 16.0,
-              ),
-              itemCount: widget.stopWatch.laps.length,
-              itemBuilder: (BuildContext ctxt, int index) =>
-                  generateLap(widget.stopWatch.laps[index])),
-        ),
-      ],
+    return SizedBox(
+      height: 250,
+      child: new ListView.builder(
+          padding: const EdgeInsets.only(
+            top: 16.0,
+            bottom: 16.0,
+          ),
+          itemCount: widget.stopWatch.laps.length,
+          itemBuilder: (BuildContext ctxt, int index) =>
+              generateLap(widget.stopWatch.laps[index])),
     );
   }
 
@@ -239,14 +235,22 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
   @override
   Widget build(BuildContext context) {
     ThemeData themeData = Theme.of(context);
-    return Flex(direction: Axis.vertical, children: [
-      getText(),
-      Text('Laps', style: TextStyle(color: Colors.grey, fontSize: 16)),
-      Divider(
-        indent: 1,
-      ),
-      getLapsBuilder(),
-      getButtons(themeData),
-    ]);
+    return Flex(
+        direction: Axis.vertical,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          getText(),
+          Flex(
+            direction: Axis.vertical,
+            children: [
+              Text('Laps', style: TextStyle(color: Colors.grey, fontSize: 16)),
+              Divider(
+                indent: 1,
+              ),
+              getLapsBuilder(),
+            ],
+          ),
+          getButtons(themeData),
+        ]);
   }
 }
