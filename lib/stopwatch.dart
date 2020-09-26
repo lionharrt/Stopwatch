@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hello_world/generic_button.dart';
 
 class StopWatch {
   List<Lap> laps = [];
@@ -24,92 +25,83 @@ class StopWatchPage extends StatefulWidget {
 }
 
 class _StopWatchPageState extends State<StopWatchPage> {
-  final List<StopWatch> stopwatches = [];
-  // final List<StopWatchWidget> stopwatches = [];
-
-  void addStopWatch() {
-    setState(() {
-      stopwatches.add(StopWatch());
-    });
-  }
-
-  void removeStopWatch(StopWatch stopwatch) {
-    final int index = stopwatches.indexOf(stopwatch);
-    setState(() {
-      stopwatches.removeAt(index);
-    });
-  }
-
-  void removeAllStopWatches() {
-    setState(() {
-      stopwatches.clear();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     ThemeData themeData = Theme.of(context);
     return Scaffold(
       backgroundColor: themeData.backgroundColor,
-      body: Center(
-          child: ListView.builder(
-              padding: const EdgeInsets.only(
-                top: 16.0,
-                bottom: 16.0,
-              ),
-              itemCount: stopwatches.length,
-              itemBuilder: (BuildContext ctxt, int index) {
-                return StopWatchWidget(stopwatches[index], removeStopWatch);
-              })),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addStopWatch,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: Center(child: StopWatchWidget(StopWatch())),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: addStopWatch,
+      //   tooltip: 'Increment',
+      //   child: Icon(Icons.add),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
 
 class StopWatchWidget extends StatefulWidget {
-  final Function(StopWatch) removeStopWatch;
   final StopWatch stopWatch;
 
-  StopWatchWidget(this.stopWatch, this.removeStopWatch, {Key key})
-      : super(key: key);
+  StopWatchWidget(this.stopWatch, {Key key}) : super(key: key);
 
   @override
   _StopWatchWidgetState createState() => _StopWatchWidgetState();
 }
 
 class _StopWatchWidgetState extends State<StopWatchWidget> {
+/* 
+*    ----- Properties --- 
+*/
   bool isStopped = true;
   Timer timer;
+  Stopwatch nativeStopWatch;
 
-  String formatNumber(int input) {
-    if (input <= 9) {
-      return "0$input";
-    } else if (input > 99 && input < 999) {
-      return "0$input".substring(1, 3);
-    } else if (input > 999) {
-      return "$input".substring(1, 3);
+/* 
+*    ----- Methods --- 
+*/
+  String formatTime(duration) {
+    String minutes = duration.inMinutes.remainder(60) < 10
+        ? '0${duration.inMinutes.remainder(60)}'
+        : '${duration.inMinutes.remainder(60)}';
+    String seconds = duration.inSeconds.remainder(60) < 10
+        ? '0${duration.inSeconds.remainder(60)}'
+        : '${duration.inSeconds.remainder(60)}';
+
+    String milliseconds = '0${duration.inMilliseconds}';
+    if (milliseconds.length > 2) {
+      milliseconds = milliseconds.substring(
+        "${duration.inMilliseconds}".length - 2,
+        "${duration.inMilliseconds}".length - 0,
+      );
     }
-    return "$input";
+
+    return "$minutes:$seconds:$milliseconds";
   }
 
   void play() {
     if (isStopped) {
-      isStopped = false;
-      timer = Timer.periodic(Duration(milliseconds: 10), (Timer timer) {
-        widget.stopWatch.duration = Duration(
-            milliseconds: widget.stopWatch.duration.inMilliseconds + 10);
-        setState(() {});
+      setState(() {
+        isStopped = false;
       });
+      _tick();
     } else {
       setState(() {
+        nativeStopWatch.stop();
         isStopped = true;
       });
       timer.cancel();
     }
+  }
+
+  void restart() {
+    setState(() {
+      timer.cancel();
+      isStopped = true;
+      nativeStopWatch = null;
+      widget.stopWatch.laps.clear();
+      widget.stopWatch.duration = Duration();
+    });
   }
 
   void lap() {
@@ -119,6 +111,25 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
     });
   }
 
+  void _tick() {
+    timer = Timer.periodic(Duration(milliseconds: 1), (Timer timer) {
+      if (nativeStopWatch == null) {
+        nativeStopWatch = Stopwatch();
+        nativeStopWatch.start();
+      } else {
+        nativeStopWatch.start();
+      }
+      setState(() {
+        widget.stopWatch.duration =
+            Duration(milliseconds: nativeStopWatch.elapsedMilliseconds);
+      });
+    });
+  }
+
+/* 
+*    ----- LifeCycle --- 
+*/
+
   @override
   void dispose() {
     if (this.timer != null) {
@@ -127,6 +138,9 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
     super.dispose();
   }
 
+/* 
+*    ----- Widgets --- 
+*/
   Widget generateLap(Lap lap) {
     return Flex(
         direction: Axis.horizontal,
@@ -141,8 +155,7 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
           ),
           Container(
             margin: EdgeInsets.only(right: 16),
-            child: Text(
-                "${formatNumber(lap.duration.inMinutes)}:${formatNumber(lap.duration.inSeconds)}:${formatNumber(lap.duration.inMilliseconds)}",
+            child: Text(formatTime(lap.duration),
                 style: TextStyle(
                   fontSize: 25.0,
                 )),
@@ -150,70 +163,90 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
         ]);
   }
 
+  Widget getText() {
+    return Expanded(
+        child: Container(
+            alignment: Alignment.bottomCenter,
+            child: Text(
+              formatTime(widget.stopWatch.duration),
+              style: TextStyle(
+                fontSize: 60.0,
+              ),
+            )));
+  }
+
+  Widget getButtons(ThemeData themeData) {
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      GenericButton(
+        icon: Icon(Icons.assistant_photo),
+        method: lap,
+        alignment: Alignment.bottomLeft,
+        color: themeData.accentColor,
+        elevation: 4.0,
+        shape: CircleBorder(),
+        size: 25,
+        margin: EdgeInsets.only(bottom: 20, left: 45),
+      ),
+      GenericButton(
+        icon: Icon(
+          isStopped ? Icons.play_arrow : Icons.pause,
+          size: 50,
+        ),
+        method: play,
+        alignment: Alignment.bottomCenter,
+        color: themeData.accentColor,
+        elevation: 4.0,
+        shape: CircleBorder(),
+        size: 20,
+        margin: EdgeInsets.only(
+          bottom: 20,
+        ),
+      ),
+      GenericButton(
+        icon: Icon(Icons.refresh),
+        method: restart,
+        alignment: Alignment.bottomRight,
+        color: themeData.accentColor,
+        elevation: 4.0,
+        shape: CircleBorder(),
+        size: 25,
+        margin: EdgeInsets.only(bottom: 20, right: 45),
+      ),
+    ]);
+  }
+
+  Widget getLapsBuilder() {
+    return Flex(
+      direction: Axis.vertical,
+      children: [
+        SizedBox(
+          child: new ListView.builder(
+              padding: const EdgeInsets.only(
+                top: 16.0,
+                bottom: 16.0,
+              ),
+              itemCount: widget.stopWatch.laps.length,
+              itemBuilder: (BuildContext ctxt, int index) =>
+                  generateLap(widget.stopWatch.laps[index])),
+        ),
+      ],
+    );
+  }
+
+  /* 
+*    ----- Build --- 
+*/
   @override
   Widget build(BuildContext context) {
-    return Container(
-        height: double.parse(
-            '${widget.stopWatch.laps.length > 0 ? 110 + (widget.stopWatch.laps.length * 45) : 75}'),
-        child: Flex(
-            direction: Axis.vertical,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Flex(
-                  direction: Axis.horizontal,
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Container(
-                        margin: EdgeInsets.only(left: 16),
-                        child: Center(
-                          child: Text(
-                            "${formatNumber(widget.stopWatch.duration.inMinutes)}:${formatNumber(widget.stopWatch.duration.inSeconds)}:${formatNumber(widget.stopWatch.duration.inMilliseconds)}",
-                            style: TextStyle(
-                              fontSize: 35.0,
-                            ),
-                          ),
-                        )),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(Icons.assistant_photo),
-                      tooltip: 'Lap',
-                      onPressed: () => lap(),
-                    ),
-                    IconButton(
-                      icon: Icon(isStopped ? Icons.play_arrow : Icons.pause),
-                      tooltip: 'Play',
-                      onPressed: () => play(),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete_outline),
-                      tooltip: 'Delete Stopwatch',
-                      onPressed: () =>
-                          {widget.removeStopWatch(widget.stopWatch)},
-                    ),
-                  ]),
-              if (widget.stopWatch.laps.length > 0)
-                Text('Laps',
-                    style: TextStyle(color: Colors.grey, fontSize: 16)),
-              if (widget.stopWatch.laps.length > 0)
-                Divider(
-                  indent: 1,
-                ),
-              Expanded(
-                child: SizedBox(
-                    height: 200.0,
-                    child: new ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(
-                          top: 16.0,
-                          bottom: 16.0,
-                        ),
-                        itemCount: widget.stopWatch.laps.length,
-                        itemBuilder: (BuildContext ctxt, int index) =>
-                            generateLap(widget.stopWatch.laps[index]))),
-              ),
-              Divider(
-                color: Colors.black,
-              )
-            ]));
+    ThemeData themeData = Theme.of(context);
+    return Flex(direction: Axis.vertical, children: [
+      getText(),
+      Text('Laps', style: TextStyle(color: Colors.grey, fontSize: 16)),
+      Divider(
+        indent: 1,
+      ),
+      getLapsBuilder(),
+      getButtons(themeData),
+    ]);
   }
 }
