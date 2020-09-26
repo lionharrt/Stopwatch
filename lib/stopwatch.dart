@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hello_world/data_storage.dart';
 import 'package:hello_world/generic_button.dart';
 
 class StopWatch {
@@ -17,7 +18,8 @@ class Lap {
 }
 
 class StopWatchPage extends StatefulWidget {
-  StopWatchPage({Key key, this.title}) : super(key: key);
+  final DataStorage dataStorage;
+  StopWatchPage(this.dataStorage, {Key key, this.title}) : super(key: key);
   final String title;
 
   @override
@@ -30,12 +32,7 @@ class _StopWatchPageState extends State<StopWatchPage> {
     ThemeData themeData = Theme.of(context);
     return Scaffold(
       backgroundColor: themeData.backgroundColor,
-      body: Center(child: StopWatchWidget(StopWatch())),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: addStopWatch,
-      //   tooltip: 'Increment',
-      //   child: Icon(Icons.add),
-      // ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: Center(child: StopWatchWidget(widget.dataStorage.stopwatchState)),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hello_world/data_storage.dart';
 import 'package:hello_world/stopwatch.dart';
 import 'package:hello_world/timer.dart';
 
@@ -30,6 +31,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+  final DataStorage dataStorage = DataStorage();
   TabController tabController;
 
   @override
@@ -53,7 +55,7 @@ class _HomePageState extends State<HomePage>
 
   Widget getTabBarPages() {
     return TabBarView(controller: tabController, children: <Widget>[
-      StopWatchPage(),
+      StopWatchPage(dataStorage),
       HourGlassTimerPage(),
     ]);
   }
