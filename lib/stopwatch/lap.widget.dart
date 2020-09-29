@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:hello_world/stopwatch/displays_time.mixin.dart';
+import 'package:hello_world/common/displays_time.mixin.dart';
 import 'package:hello_world/stopwatch/stopwatch.class.dart';
 
 class LapWidget extends StatelessWidget with DisplaysTime {
@@ -21,7 +21,7 @@ class LapWidget extends StatelessWidget with DisplaysTime {
           ),
           Container(
             margin: EdgeInsets.only(right: 16),
-            child: Text(formatTime(lap.duration),
+            child: Text(formatTimeMSMs(lap.duration),
                 style: TextStyle(
                   fontSize: 25.0,
                 )),

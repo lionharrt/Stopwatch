@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hello_world/stopwatch/displays_time.mixin.dart';
+import 'package:hello_world/common/displays_time.mixin.dart';
 
 class StopwatchText extends StatelessWidget with DisplaysTime {
   final Duration duration;
@@ -11,7 +11,7 @@ class StopwatchText extends StatelessWidget with DisplaysTime {
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.only(top: 50),
         child: Text(
-          formatTime(duration),
+          formatTimeMSMs(duration),
           style: TextStyle(
             fontSize: 60.0,
           ),

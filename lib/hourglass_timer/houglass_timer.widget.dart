@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
-import 'package:hello_world/generic_button.dart';
-import 'package:hello_world/hourglass_timer/custom_timer_painter.widget.dart';
+import 'package:hello_world/hourglass_timer/animated_cooldown.widget.dart';
+import 'package:hello_world/hourglass_timer/control_buttons_widget.dart';
+import 'package:hello_world/hourglass_timer/frequent_timer_button_container.widget.dart';
 import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
+import 'package:hello_world/hourglass_timer/timer_picker.widget.dart';
 
 class HourGlassTimerPage extends StatefulWidget {
   final List<Duration> frequentTimers;
@@ -18,7 +19,6 @@ class HourGlassTimerPage extends StatefulWidget {
 class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     with TickerProviderStateMixin {
   //*-----------------Properties--------------------//
-  //*-----------------Listeners--------------------//
 
   //*-----------------LifeCycle--------------------//
   @override
@@ -40,20 +40,6 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
   }
 
   //*-----------------Methods--------------------//
-  String formatTime() {
-    String hours = widget.hourGlassTimer.changingDuration.inHours < 10
-        ? '0${widget.hourGlassTimer.changingDuration.inHours}'
-        : '${widget.hourGlassTimer.changingDuration.inHours}';
-    String minutes = widget.hourGlassTimer.changingDuration.inMinutes % 60 < 10
-        ? '0${widget.hourGlassTimer.changingDuration.inMinutes % 60}'
-        : '${widget.hourGlassTimer.changingDuration.inMinutes % 60}';
-    String seconds = widget.hourGlassTimer.changingDuration.inSeconds % 60 < 10
-        ? '0${widget.hourGlassTimer.changingDuration.inSeconds % 60}'
-        : '${widget.hourGlassTimer.changingDuration.inSeconds % 60}';
-
-    print("$hours:$minutes:$seconds");
-    return "$hours:$minutes:$seconds";
-  }
 
   void play() {
     if (widget.hourGlassTimer.originalDuration.inSeconds >= 1) {
@@ -135,129 +121,6 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     print(widget.hourGlassTimer.dateTime);
   }
 
-  // *-----------------Widgets--------------------//
-  Widget getNumberButton(
-      int number, EdgeInsets margin, Function method, BuildContext context) {
-    ThemeData themeData = Theme.of(context);
-    return Container(
-      margin: margin,
-      child: RawMaterialButton(
-        onPressed: () => method(number),
-        elevation: 2.0,
-        fillColor: themeData.accentColor,
-        child: Column(children: [
-          Text('$number',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25)),
-          Text('mins', style: TextStyle(fontWeight: FontWeight.w400))
-        ]),
-        padding: EdgeInsets.all(12),
-        shape: CircleBorder(),
-      ),
-    );
-  }
-
-  Widget getTimePicker() {
-    return Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-            margin: EdgeInsets.only(top: 100),
-            child: TimePickerSpinner(
-              time: widget.hourGlassTimer.dateTime,
-              spacing: 5,
-              isForce2Digits: true,
-              itemWidth: 80,
-              itemHeight: 80,
-              alignment: Alignment.center,
-              normalTextStyle: TextStyle(
-                fontSize: 35,
-              ),
-              highlightedTextStyle:
-                  TextStyle(fontSize: 45, fontWeight: FontWeight.w600),
-              isShowSeconds: true,
-              onTimeChange: (time) {
-                setState(() {
-                  widget.hourGlassTimer.originalDuration = Duration(
-                      hours: time.hour,
-                      minutes: time.minute,
-                      seconds: time.second);
-                  widget.hourGlassTimer.dateTime =
-                      DateTime(0, 0, 0, time.hour, time.minute, time.second);
-                });
-              },
-            )));
-  }
-
-  Widget getAnimatedCountdown(ThemeData themeData) {
-    return Padding(
-        padding: EdgeInsets.all(60.0),
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: Align(
-                  alignment: FractionalOffset.topCenter,
-                  child: AspectRatio(
-                    aspectRatio: 1.0,
-                    child: Stack(
-                      children: <Widget>[
-                        Positioned.fill(
-                          child: CustomPaint(
-                              painter: CustomTimerPainter(
-                            animation: widget.hourGlassTimer.controller,
-                            backgroundColor: Colors.white,
-                            color: themeData.accentColor,
-                          )),
-                        ),
-                        Align(
-                          alignment: FractionalOffset.topCenter,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                widget.hourGlassTimer.isFinished
-                                    ? 'Finished'
-                                    : formatTime(),
-                                style: TextStyle(
-                                    fontSize: 60.0, color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            ]));
-  }
-
-  Widget getFrequentTimerButtons(ThemeData themeData) {
-    List<Widget> frequentTimers = [];
-    widget.frequentTimers.forEach((e) {
-      frequentTimers.add(getNumberButton(e.inMinutes,
-          EdgeInsets.only(bottom: 120), setTimeFromFrequent, context));
-    });
-    frequentTimers.add(GenericButton(
-        icon: Icon(Icons.add),
-        alignment: null,
-        margin: EdgeInsets.only(bottom: 120),
-        method: toggleShowFrequentTimers,
-        size: 25,
-        elevation: 4,
-        color: themeData.accentColor,
-        shape: CircleBorder()));
-
-    return Container(
-        alignment: Alignment.bottomCenter,
-        child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Wrap(
-                direction: Axis.horizontal,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: frequentTimers)));
-  }
-
   //*-----------------Build--------------------//
 
   @override
@@ -268,78 +131,22 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
         body: AnimatedBuilder(
             animation: widget.hourGlassTimer.controller,
             builder: (context, child) => Stack(children: [
-                  if (!widget.hourGlassTimer.isStarted) getTimePicker(),
+                  if (!widget.hourGlassTimer.isStarted)
+                    TimerPicker(hourGlassTimer: widget.hourGlassTimer),
                   if (widget.hourGlassTimer.isStarted)
-                    getAnimatedCountdown(themeData),
+                    AnimatedCooldown(hourGlassTimer: widget.hourGlassTimer),
                   if (!widget.hourGlassTimer.isStarted &&
                       widget.hourGlassTimer.showFrequentTimers)
-                    getFrequentTimerButtons(themeData),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (!widget.hourGlassTimer.isFinished)
-                        Expanded(
-                            child: GenericButton(
-                                icon: Icon(
-                                  widget.hourGlassTimer.controller.isAnimating
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                  size: 50,
-                                ),
-                                alignment: Alignment.bottomCenter,
-                                margin: EdgeInsets.only(left: 135, bottom: 20),
-                                method: play,
-                                size: 20,
-                                elevation: 4,
-                                color: themeData.accentColor,
-                                shape: CircleBorder())),
-                      if (!widget.hourGlassTimer.isStarted)
-                        GenericButton(
-                            icon: Icon(Icons.add),
-                            alignment: Alignment.bottomRight,
-                            margin: EdgeInsets.only(right: 45, bottom: 30),
-                            method: toggleShowFrequentTimers,
-                            size: 25,
-                            elevation: 4,
-                            color: themeData.accentColor,
-                            shape: CircleBorder()),
-                      if (!widget.hourGlassTimer.isFinished &&
-                          widget.hourGlassTimer.isStarted)
-                        GenericButton(
-                            icon: Icon(Icons.stop),
-                            alignment: Alignment.bottomRight,
-                            margin: EdgeInsets.only(right: 45, bottom: 30),
-                            method: stop,
-                            size: 25,
-                            elevation: 4,
-                            color: themeData.accentColor,
-                            shape: CircleBorder()),
-                      if (widget.hourGlassTimer.isFinished)
-                        Expanded(
-                            child: GenericButton(
-                                icon: Icon(
-                                  Icons.replay,
-                                  size: 50,
-                                ),
-                                alignment: Alignment.bottomCenter,
-                                margin: EdgeInsets.only(left: 135, bottom: 20),
-                                method: repeat,
-                                size: 25,
-                                elevation: 4,
-                                color: themeData.accentColor,
-                                shape: CircleBorder())),
-                      if (widget.hourGlassTimer.isFinished)
-                        GenericButton(
-                            icon: Icon(Icons.keyboard_return),
-                            alignment: Alignment.bottomCenter,
-                            margin: EdgeInsets.only(right: 45, bottom: 30),
-                            method: stop,
-                            size: 25,
-                            elevation: 4,
-                            color: themeData.accentColor,
-                            shape: CircleBorder())
-                    ],
-                  )
+                    FrequentTimerButtonContainer(
+                        frequentTimers: widget.frequentTimers,
+                        setTimeFromFrequent: setTimeFromFrequent,
+                        toggleShowFrequentTimers: toggleShowFrequentTimers),
+                  HourGlassTimerControlButtons(
+                      hourGlassTimer: widget.hourGlassTimer,
+                      play: play,
+                      stop: stop,
+                      repeat: repeat,
+                      toggleShowFrequentTimers: toggleShowFrequentTimers)
                 ])));
   }
 }

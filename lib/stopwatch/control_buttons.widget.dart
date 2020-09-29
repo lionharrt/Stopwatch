@@ -1,4 +1,4 @@
-import 'package:hello_world/generic_button.dart';
+import 'package:hello_world/common/generic_button.dart';
 import 'package:flutter/material.dart';
 
 class ControlButtons extends StatelessWidget {
