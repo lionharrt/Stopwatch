@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hello_world/data_storage.dart';
 import 'package:hello_world/generic_button.dart';
 
 class StopWatch {
   List<Lap> laps = [];
   Duration duration = Duration();
+  bool isStopped = true;
+  Timer timer;
+  Stopwatch nativeStopWatch;
 }
 
 class Lap {
@@ -18,8 +20,8 @@ class Lap {
 }
 
 class StopWatchPage extends StatefulWidget {
-  final DataStorage dataStorage;
-  StopWatchPage(this.dataStorage, {Key key, this.title}) : super(key: key);
+  final StopWatch stopwatch;
+  StopWatchPage(this.stopwatch, {Key key, this.title}) : super(key: key);
   final String title;
 
   @override
@@ -32,7 +34,7 @@ class _StopWatchPageState extends State<StopWatchPage> {
     ThemeData themeData = Theme.of(context);
     return Scaffold(
       backgroundColor: themeData.backgroundColor,
-      body: Center(child: StopWatchWidget(widget.dataStorage.stopwatchState)),
+      body: Center(child: StopWatchWidget(widget.stopwatch)),
     );
   }
 }
@@ -50,9 +52,6 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
 /* 
 *    ----- Properties --- 
 */
-  bool isStopped = true;
-  Timer timer;
-  Stopwatch nativeStopWatch;
 
 /* 
 *    ----- Methods --- 
@@ -77,25 +76,25 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
   }
 
   void play() {
-    if (isStopped) {
+    if (widget.stopWatch.isStopped) {
       setState(() {
-        isStopped = false;
+        widget.stopWatch.isStopped = false;
       });
       _tick();
     } else {
       setState(() {
-        nativeStopWatch.stop();
-        isStopped = true;
+        widget.stopWatch.nativeStopWatch.stop();
+        widget.stopWatch.isStopped = true;
       });
-      timer.cancel();
+      widget.stopWatch.timer.cancel();
     }
   }
 
   void restart() {
     setState(() {
-      timer.cancel();
-      isStopped = true;
-      nativeStopWatch = null;
+      widget.stopWatch.timer.cancel();
+      widget.stopWatch.isStopped = true;
+      widget.stopWatch.nativeStopWatch = null;
       widget.stopWatch.laps.clear();
       widget.stopWatch.duration = Duration();
     });
@@ -109,16 +108,17 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
   }
 
   void _tick() {
-    timer = Timer.periodic(Duration(milliseconds: 1), (Timer timer) {
-      if (nativeStopWatch == null) {
-        nativeStopWatch = Stopwatch();
-        nativeStopWatch.start();
+    widget.stopWatch.timer =
+        Timer.periodic(Duration(milliseconds: 1), (Timer timer) {
+      if (widget.stopWatch.nativeStopWatch == null) {
+        widget.stopWatch.nativeStopWatch = Stopwatch();
+        widget.stopWatch.nativeStopWatch.start();
       } else {
-        nativeStopWatch.start();
+        widget.stopWatch.nativeStopWatch.start();
       }
       setState(() {
-        widget.stopWatch.duration =
-            Duration(milliseconds: nativeStopWatch.elapsedMilliseconds);
+        widget.stopWatch.duration = Duration(
+            milliseconds: widget.stopWatch.nativeStopWatch.elapsedMilliseconds);
       });
     });
   }
@@ -129,8 +129,9 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
 
   @override
   void dispose() {
-    if (this.timer != null) {
-      this.timer.cancel();
+    if (widget.stopWatch.timer != null) {
+      widget.stopWatch.timer.cancel();
+      widget.stopWatch.isStopped = true;
     }
     super.dispose();
   }
@@ -186,7 +187,7 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
       ),
       GenericButton(
         icon: Icon(
-          isStopped ? Icons.play_arrow : Icons.pause,
+          widget.stopWatch.isStopped ? Icons.play_arrow : Icons.pause,
           size: 50,
         ),
         method: play,
