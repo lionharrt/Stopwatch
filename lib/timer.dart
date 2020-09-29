@@ -20,6 +20,26 @@ class HourGlassTimer {
   bool isPaused = false;
   bool isFinished = false;
   DateTime dateTime = DateTime(0);
+
+  void _tick() {
+    timer = Timer.periodic(Duration(milliseconds: 200), (Timer timer) {
+      // if stopwatch is not created  ? start
+      if (nativeStopWatch == null) {
+        nativeStopWatch = Stopwatch();
+        nativeStopWatch.start();
+      }
+      if (changingDuration.inMilliseconds < 350) {
+        changingDuration = Duration(
+            milliseconds: originalDuration.inMilliseconds -
+                nativeStopWatch.elapsedMilliseconds);
+        isFinished = true;
+        timer.cancel();
+      } else {}
+      changingDuration = Duration(
+          milliseconds: originalDuration.inMilliseconds -
+              nativeStopWatch.elapsedMilliseconds);
+    });
+  }
 }
 
 class HourGlassTimerPage extends StatefulWidget {
@@ -35,16 +55,19 @@ class HourGlassTimerPage extends StatefulWidget {
 class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     with TickerProviderStateMixin {
   //*-----------------Properties--------------------//
+  //*-----------------Listeners--------------------//
 
-//*-----------------LifeCycle--------------------//
+  //*-----------------LifeCycle--------------------//
   @override
   void initState() {
     super.initState();
     if (widget.hourGlassTimer.controller == null) {
-      widget.hourGlassTimer.controller = AnimationController(
-        vsync: this,
-        duration: Duration(),
-      );
+      setState(() {
+        widget.hourGlassTimer.controller = AnimationController(
+          vsync: this,
+          duration: Duration(),
+        );
+      });
     }
   }
 
@@ -89,14 +112,14 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
               widget.hourGlassTimer.originalDuration;
           widget.hourGlassTimer.isStarted = true;
         });
-        _tick();
+        widget.hourGlassTimer._tick();
       } else if (widget.hourGlassTimer.isPaused &&
           !widget.hourGlassTimer.isFinished) {
         setState(() {
           widget.hourGlassTimer.isPaused = false;
         });
         widget.hourGlassTimer.nativeStopWatch.start();
-        _tick();
+        widget.hourGlassTimer._tick();
       } else {
         // pausing
         setState(() {
@@ -121,21 +144,6 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     play();
   }
 
-  void toggleShowFrequentTimers() {
-    setState(() {
-      widget.hourGlassTimer.showFrequentTimers =
-          !widget.hourGlassTimer.showFrequentTimers;
-    });
-  }
-
-  void setTimeFromFrequent(int minutes) {
-    setState(() {
-      widget.hourGlassTimer.dateTime = DateTime(0, 0, 0, 0, minutes);
-      widget.hourGlassTimer.originalDuration = Duration(minutes: minutes);
-    });
-    print(widget.hourGlassTimer.dateTime);
-  }
-
   void stop() {
     widget.hourGlassTimer.timer.cancel();
     widget.hourGlassTimer.controller.reset();
@@ -149,31 +157,23 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     });
   }
 
-  void _tick() {
-    widget.hourGlassTimer.timer =
-        Timer.periodic(Duration(milliseconds: 200), (Timer timer) {
-      // if stopwatch is not created  ? start
-      if (widget.hourGlassTimer.nativeStopWatch == null) {
-        widget.hourGlassTimer.nativeStopWatch = Stopwatch();
-        widget.hourGlassTimer.nativeStopWatch.start();
-      }
-      if (widget.hourGlassTimer.changingDuration.inMilliseconds < 350) {
-        setState(() {
-          widget.hourGlassTimer.changingDuration = Duration(
-              milliseconds: widget
-                      .hourGlassTimer.originalDuration.inMilliseconds -
-                  widget.hourGlassTimer.nativeStopWatch.elapsedMilliseconds);
-          widget.hourGlassTimer.isFinished = true;
-        });
-        widget.hourGlassTimer.timer.cancel();
-      } else {}
-      setState(() {
-        widget.hourGlassTimer.changingDuration = Duration(
-            milliseconds:
-                widget.hourGlassTimer.originalDuration.inMilliseconds -
-                    widget.hourGlassTimer.nativeStopWatch.elapsedMilliseconds);
-      });
+  void onComplete() {
+    this.setState(() {});
+  }
+
+  void toggleShowFrequentTimers() {
+    setState(() {
+      widget.hourGlassTimer.showFrequentTimers =
+          !widget.hourGlassTimer.showFrequentTimers;
     });
+  }
+
+  void setTimeFromFrequent(int minutes) {
+    setState(() {
+      widget.hourGlassTimer.dateTime = DateTime(0, 0, 0, 0, minutes);
+      widget.hourGlassTimer.originalDuration = Duration(minutes: minutes);
+    });
+    print(widget.hourGlassTimer.dateTime);
   }
 
   // *-----------------Widgets--------------------//

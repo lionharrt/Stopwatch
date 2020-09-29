@@ -9,6 +9,18 @@ class StopWatch {
   bool isStopped = true;
   Timer timer;
   Stopwatch nativeStopWatch;
+
+  void tick() {
+    timer = Timer.periodic(Duration(milliseconds: 1), (Timer timer) {
+      if (nativeStopWatch == null) {
+        nativeStopWatch = Stopwatch();
+        nativeStopWatch.start();
+      } else {
+        nativeStopWatch.start();
+      }
+      duration = Duration(milliseconds: nativeStopWatch.elapsedMilliseconds);
+    });
+  }
 }
 
 class Lap {
@@ -49,13 +61,20 @@ class StopWatchWidget extends StatefulWidget {
 }
 
 class _StopWatchWidgetState extends State<StopWatchWidget> {
-/* 
-*    ----- Properties --- 
-*/
+//*   ----- Properties ---
 
-/* 
-*    ----- Methods --- 
-*/
+//*   ----- LifeCycle ---
+
+  @override
+  void dispose() {
+    if (widget.stopWatch.timer != null) {
+      widget.stopWatch.timer.cancel();
+      widget.stopWatch.isStopped = true;
+    }
+    super.dispose();
+  }
+
+//*    ----- Methods ---
   String formatTime(duration) {
     String minutes = duration.inMinutes.remainder(60) < 10
         ? '0${duration.inMinutes.remainder(60)}'
@@ -80,7 +99,7 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
       setState(() {
         widget.stopWatch.isStopped = false;
       });
-      _tick();
+      widget.stopWatch.tick();
     } else {
       setState(() {
         widget.stopWatch.nativeStopWatch.stop();
@@ -107,38 +126,7 @@ class _StopWatchWidgetState extends State<StopWatchWidget> {
     });
   }
 
-  void _tick() {
-    widget.stopWatch.timer =
-        Timer.periodic(Duration(milliseconds: 1), (Timer timer) {
-      if (widget.stopWatch.nativeStopWatch == null) {
-        widget.stopWatch.nativeStopWatch = Stopwatch();
-        widget.stopWatch.nativeStopWatch.start();
-      } else {
-        widget.stopWatch.nativeStopWatch.start();
-      }
-      setState(() {
-        widget.stopWatch.duration = Duration(
-            milliseconds: widget.stopWatch.nativeStopWatch.elapsedMilliseconds);
-      });
-    });
-  }
-
-/* 
-*    ----- LifeCycle --- 
-*/
-
-  @override
-  void dispose() {
-    if (widget.stopWatch.timer != null) {
-      widget.stopWatch.timer.cancel();
-      widget.stopWatch.isStopped = true;
-    }
-    super.dispose();
-  }
-
-/* 
-*    ----- Widgets --- 
-*/
+//*    ----- Widgets ---
   Widget generateLap(Lap lap) {
     return Flex(
         direction: Axis.horizontal,
