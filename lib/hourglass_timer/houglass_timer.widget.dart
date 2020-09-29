@@ -1,46 +1,9 @@
-import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:hello_world/generic_button.dart';
-
-class HourGlassTimer {
-  AnimationController controller;
-
-  Duration originalDuration = Duration();
-  Duration changingDuration = Duration();
-
-  Timer timer;
-  Stopwatch nativeStopWatch;
-
-  bool showFrequentTimers = false;
-  bool isStarted = false;
-  bool isPaused = false;
-  bool isFinished = false;
-  DateTime dateTime = DateTime(0);
-
-  void _tick() {
-    timer = Timer.periodic(Duration(milliseconds: 200), (Timer timer) {
-      // if stopwatch is not created  ? start
-      if (nativeStopWatch == null) {
-        nativeStopWatch = Stopwatch();
-        nativeStopWatch.start();
-      }
-      if (changingDuration.inMilliseconds < 350) {
-        changingDuration = Duration(
-            milliseconds: originalDuration.inMilliseconds -
-                nativeStopWatch.elapsedMilliseconds);
-        isFinished = true;
-        timer.cancel();
-      } else {}
-      changingDuration = Duration(
-          milliseconds: originalDuration.inMilliseconds -
-              nativeStopWatch.elapsedMilliseconds);
-    });
-  }
-}
+import 'package:hello_world/hourglass_timer/custom_timer_painter.widget.dart';
+import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
 
 class HourGlassTimerPage extends StatefulWidget {
   final List<Duration> frequentTimers;
@@ -112,14 +75,14 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
               widget.hourGlassTimer.originalDuration;
           widget.hourGlassTimer.isStarted = true;
         });
-        widget.hourGlassTimer._tick();
+        widget.hourGlassTimer.tick();
       } else if (widget.hourGlassTimer.isPaused &&
           !widget.hourGlassTimer.isFinished) {
         setState(() {
           widget.hourGlassTimer.isPaused = false;
         });
         widget.hourGlassTimer.nativeStopWatch.start();
-        widget.hourGlassTimer._tick();
+        widget.hourGlassTimer.tick();
       } else {
         // pausing
         setState(() {
@@ -155,10 +118,6 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
       widget.hourGlassTimer.isPaused = false;
       widget.hourGlassTimer.isFinished = false;
     });
-  }
-
-  void onComplete() {
-    this.setState(() {});
   }
 
   void toggleShowFrequentTimers() {
@@ -382,37 +341,5 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
                     ],
                   )
                 ])));
-  }
-}
-
-class CustomTimerPainter extends CustomPainter {
-  CustomTimerPainter({
-    this.animation,
-    this.backgroundColor,
-    this.color,
-  }) : super(repaint: animation);
-
-  final Animation<double> animation;
-  final Color backgroundColor, color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = backgroundColor
-      ..strokeWidth = 10.0
-      ..strokeCap = StrokeCap.butt
-      ..style = PaintingStyle.stroke;
-
-    canvas.drawCircle(size.center(Offset.zero), size.width / 2.0, paint);
-    paint.color = color;
-    double progress = (1.0 - animation.value) * 2 * math.pi;
-    canvas.drawArc(Offset.zero & size, math.pi * 1.5, -progress, false, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomTimerPainter old) {
-    return animation.value != old.animation.value ||
-        color != old.color ||
-        backgroundColor != old.backgroundColor;
   }
 }

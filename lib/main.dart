@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/data_storage.dart';
-import 'package:hello_world/stopwatch.dart';
-import 'package:hello_world/timer.dart';
+import 'package:hello_world/stopwatch/stopwatch.widget.dart';
+import 'package:hello_world/hourglass_timer/houglass_timer.widget.dart';
 
 void main() {
   runApp(MyApp());
