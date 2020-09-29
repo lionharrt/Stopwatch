@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hello_world/data_storage.dart';
+import 'package:hello_world/singletons/data_storage.dart';
 import 'package:hello_world/stopwatch/stopwatch.widget.dart';
 import 'package:hello_world/hourglass_timer/houglass_timer.widget.dart';
 
@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
       // title: 'StopWatch',
       theme: ThemeData(
         primarySwatch: Colors.amber,
+        buttonColor: Colors.amberAccent,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: HomePage(),

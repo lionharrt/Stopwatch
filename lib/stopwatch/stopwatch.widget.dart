@@ -34,6 +34,7 @@ class _StopWatchPageState extends State<StopWatchPage> {
     }
     widget.stopWatch.isStopped = true;
     changeDetection.cancel();
+    changeDetection = null;
     super.dispose();
   }
 

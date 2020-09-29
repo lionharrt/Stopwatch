@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 class MinuteButton extends StatelessWidget {
-  final Function method;
+  final Function pressMethod;
+  final Function longPressMethod;
   final int number;
-  const MinuteButton({this.number, this.method, Key key}) : super(key: key);
+  const MinuteButton(
+      {this.number, this.pressMethod, this.longPressMethod, Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +14,8 @@ class MinuteButton extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 120),
       child: RawMaterialButton(
-        onPressed: () => method(number),
+        onPressed: () => pressMethod(number),
+        onLongPress: () => longPressMethod(number),
         elevation: 2.0,
         fillColor: themeData.accentColor,
         child: Column(children: [

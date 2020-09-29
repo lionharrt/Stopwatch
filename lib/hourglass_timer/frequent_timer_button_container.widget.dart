@@ -5,11 +5,13 @@ import 'package:hello_world/hourglass_timer/minute_button.widget.dart';
 class FrequentTimerButtonContainer extends StatelessWidget {
   final List<Duration> frequentTimers;
   final Function setTimeFromFrequent;
-  final Function toggleShowFrequentTimers;
+  final Function showNewFrequentTimerModal;
+  final Function removeFrequentTimer;
   const FrequentTimerButtonContainer(
       {this.frequentTimers,
       this.setTimeFromFrequent,
-      this.toggleShowFrequentTimers,
+      this.showNewFrequentTimerModal,
+      this.removeFrequentTimer,
       Key key})
       : super(key: key);
 
@@ -18,14 +20,17 @@ class FrequentTimerButtonContainer extends StatelessWidget {
     ThemeData themeData = Theme.of(context);
     final List<Widget> frequentTimerButtons = [];
     frequentTimers.forEach((e) {
-      frequentTimerButtons
-          .add(MinuteButton(number: e.inMinutes, method: setTimeFromFrequent));
+      frequentTimerButtons.add(MinuteButton(
+        number: e.inMinutes,
+        pressMethod: setTimeFromFrequent,
+        longPressMethod: removeFrequentTimer,
+      ));
     });
     frequentTimerButtons.add(GenericButton(
         icon: Icon(Icons.add),
         alignment: null,
         margin: EdgeInsets.only(bottom: 120),
-        method: toggleShowFrequentTimers,
+        method: showNewFrequentTimerModal,
         size: 25,
         elevation: 4,
         color: themeData.accentColor,

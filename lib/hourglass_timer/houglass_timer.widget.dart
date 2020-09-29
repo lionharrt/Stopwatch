@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:hello_world/hourglass_timer/animated_cooldown.widget.dart';
 import 'package:hello_world/hourglass_timer/control_buttons_widget.dart';
 import 'package:hello_world/hourglass_timer/frequent_timer_button_container.widget.dart';
@@ -19,7 +20,7 @@ class HourGlassTimerPage extends StatefulWidget {
 class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     with TickerProviderStateMixin {
   //*-----------------Properties--------------------//
-
+  DateTime newFrequentTime;
   //*-----------------LifeCycle--------------------//
   @override
   void initState() {
@@ -121,32 +122,94 @@ class _HourGlassTimerPageState extends State<HourGlassTimerPage>
     print(widget.hourGlassTimer.dateTime);
   }
 
+  void addNewFrequentTimer(BuildContext context) {
+    Duration timeToAdd = Duration(
+        hours: newFrequentTime.hour,
+        minutes: newFrequentTime.minute,
+        seconds: newFrequentTime.second);
+    if (!widget.frequentTimers
+        .any((element) => element.inMinutes == timeToAdd.inMinutes)) {
+      widget.frequentTimers.add(timeToAdd);
+    }
+    Navigator.pop(context);
+  }
+
+  void removeFrequentTimer(int number) {
+    widget.frequentTimers.removeWhere((timer) => timer.inMinutes == number);
+  }
+
+  showNewFrequentTimerModal() {
+    this.newFrequentTime = DateTime(0);
+    showModalBottomSheet<void>(
+        context: context,
+        builder: (BuildContext context) {
+          ThemeData themeData = Theme.of(context);
+          return Container(
+              height: 200,
+              color: themeData.accentColor,
+              child: Center(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TimePickerSpinner(
+                    time: newFrequentTime,
+                    spacing: 10,
+                    isForce2Digits: true,
+                    itemWidth: 40,
+                    itemHeight: 40,
+                    alignment: Alignment.center,
+                    normalTextStyle: TextStyle(
+                      fontSize: 25,
+                    ),
+                    highlightedTextStyle:
+                        TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
+                    isShowSeconds: true,
+                    onTimeChange: (time) {
+                      newFrequentTime = time;
+                    },
+                  ),
+                  RaisedButton(
+                    child: const Text('Add'),
+                    color: themeData.buttonColor,
+                    onPressed: () => addNewFrequentTimer(context),
+                  )
+                ],
+              )));
+        });
+  }
   //*-----------------Build--------------------//
 
   @override
   Widget build(BuildContext context) {
     ThemeData themeData = Theme.of(context);
     return Scaffold(
-        backgroundColor: themeData.backgroundColor,
-        body: AnimatedBuilder(
-            animation: widget.hourGlassTimer.controller,
-            builder: (context, child) => Stack(children: [
-                  if (!widget.hourGlassTimer.isStarted)
-                    TimerPicker(hourGlassTimer: widget.hourGlassTimer),
-                  if (widget.hourGlassTimer.isStarted)
-                    AnimatedCooldown(hourGlassTimer: widget.hourGlassTimer),
-                  if (!widget.hourGlassTimer.isStarted &&
-                      widget.hourGlassTimer.showFrequentTimers)
-                    FrequentTimerButtonContainer(
-                        frequentTimers: widget.frequentTimers,
-                        setTimeFromFrequent: setTimeFromFrequent,
-                        toggleShowFrequentTimers: toggleShowFrequentTimers),
-                  HourGlassTimerControlButtons(
-                      hourGlassTimer: widget.hourGlassTimer,
-                      play: play,
-                      stop: stop,
-                      repeat: repeat,
-                      toggleShowFrequentTimers: toggleShowFrequentTimers)
-                ])));
+      backgroundColor: themeData.backgroundColor,
+      body: AnimatedBuilder(
+          animation: widget.hourGlassTimer.controller,
+          builder: (context, child) => Stack(children: [
+                if (!widget.hourGlassTimer.isStarted)
+                  TimerPicker(
+                    hourGlassTimer: widget.hourGlassTimer,
+                  ),
+                if (widget.hourGlassTimer.isStarted)
+                  AnimatedCooldown(hourGlassTimer: widget.hourGlassTimer),
+                if (!widget.hourGlassTimer.isStarted &&
+                    widget.hourGlassTimer.showFrequentTimers)
+                  FrequentTimerButtonContainer(
+                    frequentTimers: widget.frequentTimers,
+                    setTimeFromFrequent: setTimeFromFrequent,
+                    showNewFrequentTimerModal: showNewFrequentTimerModal,
+                    removeFrequentTimer: removeFrequentTimer,
+                  ),
+                HourGlassTimerControlButtons(
+                  hourGlassTimer: widget.hourGlassTimer,
+                  play: play,
+                  stop: stop,
+                  repeat: repeat,
+                  toggleShowFrequentTimers: toggleShowFrequentTimers,
+                )
+              ])),
+    );
   }
 }
