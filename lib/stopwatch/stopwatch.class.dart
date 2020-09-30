@@ -47,7 +47,6 @@ class _StopWatchState extends State<StopWatch> {
 //*-----------------Methods--------------------//
 
   void onTimeChange(Duration ticks) {
-    print('message: $ticks');
     setState(() {
       duration = ticks;
     });
