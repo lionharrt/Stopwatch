@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
-import 'package:hello_world/hourglass_timer/animated_cooldown.widget.dart';
-import 'package:hello_world/hourglass_timer/control_buttons_widget.dart';
-import 'package:hello_world/hourglass_timer/frequent_timer_button_container.widget.dart';
-import 'package:hello_world/hourglass_timer/timer_picker.widget.dart';
+import 'package:hello_world/hourglass_timer/animated_cooldown.dart';
+import 'package:hello_world/hourglass_timer/control_buttons.dart';
+import 'package:hello_world/hourglass_timer/frequent_timer_button_container.dart';
+import 'package:hello_world/hourglass_timer/timer_picker.dart';
 
 //!-- class is to keep timer picker widget stateless
 class TimerPickerData {

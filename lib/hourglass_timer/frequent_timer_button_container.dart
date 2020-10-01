@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/common/generic_button.dart';
-import 'package:hello_world/hourglass_timer/minute_button.widget.dart';
+import 'package:hello_world/hourglass_timer/minute_button.dart';
 
 class FrequentTimerButtonContainer extends StatelessWidget {
   final List<Duration> frequentTimers;

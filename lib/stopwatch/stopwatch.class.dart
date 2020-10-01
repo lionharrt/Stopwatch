@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/common/ticker.isolate.dart';
-import 'package:hello_world/stopwatch/control_buttons.widget.dart';
+import 'package:hello_world/stopwatch/control_buttons.dart';
 import 'package:hello_world/stopwatch/lap.widget.dart';
-import 'package:hello_world/stopwatch/stopwatch_text.widget.dart';
+import 'package:hello_world/stopwatch/stopwatch_text.dart';
 
 class StopWatch extends StatefulWidget {
   final List<Lap> laps = [];

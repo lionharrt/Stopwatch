@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
+import 'package:hello_world/hourglass_timer/hourglass_timer.dart';
 
 class HourGlassTimerPage extends StatelessWidget {
   final HourGlassTimer hourGlassTimer;

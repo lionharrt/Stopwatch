@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hello_world/hourglass_timer/custom_timer_painter.widget.dart';
+import 'package:hello_world/hourglass_timer/custom_timer_painter.dart';
 import 'package:hello_world/common/displays_time.mixin.dart';
 
 class AnimatedCooldown extends StatelessWidget with DisplaysTime {

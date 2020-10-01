@@ -1,5 +1,5 @@
 import 'package:hello_world/common/ticker.isolate.dart';
-import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
+import 'package:hello_world/hourglass_timer/hourglass_timer.dart';
 import 'package:hello_world/stopwatch/stopwatch.class.dart';
 
 class DataStorage {
