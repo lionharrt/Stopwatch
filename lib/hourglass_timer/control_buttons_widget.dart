@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/common/generic_button.dart';
-import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
 
 class HourGlassTimerControlButtons extends StatelessWidget {
-  final HourGlassTimer hourGlassTimer;
+  final bool isFinished;
+  final bool isStarted;
+  final AnimationController animationController;
   final Function play;
   final Function stop;
   final Function repeat;
   final Function toggleShowFrequentTimers;
   const HourGlassTimerControlButtons(
-      {this.hourGlassTimer,
+      {this.isFinished,
+      this.isStarted,
+      this.animationController,
       this.play,
       this.stop,
       this.repeat,
@@ -23,11 +26,11 @@ class HourGlassTimerControlButtons extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if (!hourGlassTimer.isFinished)
+        if (!isFinished)
           Expanded(
               child: GenericButton(
                   icon: Icon(
-                    hourGlassTimer.controller.isAnimating
+                    animationController.isAnimating
                         ? Icons.pause
                         : Icons.play_arrow,
                     size: 50,
@@ -39,7 +42,7 @@ class HourGlassTimerControlButtons extends StatelessWidget {
                   elevation: 4,
                   color: themeData.accentColor,
                   shape: CircleBorder())),
-        if (!hourGlassTimer.isStarted)
+        if (!isStarted)
           GenericButton(
               icon: Icon(Icons.add),
               alignment: Alignment.bottomRight,
@@ -49,7 +52,7 @@ class HourGlassTimerControlButtons extends StatelessWidget {
               elevation: 4,
               color: themeData.accentColor,
               shape: CircleBorder()),
-        if (!hourGlassTimer.isFinished && hourGlassTimer.isStarted)
+        if (!isFinished && isStarted)
           GenericButton(
               icon: Icon(Icons.stop),
               alignment: Alignment.bottomRight,
@@ -59,7 +62,7 @@ class HourGlassTimerControlButtons extends StatelessWidget {
               elevation: 4,
               color: themeData.accentColor,
               shape: CircleBorder()),
-        if (hourGlassTimer.isFinished)
+        if (isFinished)
           Expanded(
               child: GenericButton(
                   icon: Icon(
@@ -73,7 +76,7 @@ class HourGlassTimerControlButtons extends StatelessWidget {
                   elevation: 4,
                   color: themeData.accentColor,
                   shape: CircleBorder())),
-        if (hourGlassTimer.isFinished)
+        if (isFinished)
           GenericButton(
               icon: Icon(Icons.keyboard_return),
               alignment: Alignment.bottomCenter,

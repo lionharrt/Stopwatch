@@ -3,8 +3,8 @@ import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
 
 class TimerPicker extends StatelessWidget {
-  final HourGlassTimer hourGlassTimer;
-  const TimerPicker({this.hourGlassTimer, Key key}) : super(key: key);
+  final TimerPickerData timerPickerData;
+  const TimerPicker({this.timerPickerData, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class TimerPicker extends StatelessWidget {
         child: Container(
             margin: EdgeInsets.only(top: 100),
             child: TimePickerSpinner(
-              time: hourGlassTimer.dateTime,
+              time: timerPickerData.dateTime,
               spacing: 5,
               isForce2Digits: true,
               itemWidth: 80,
@@ -26,11 +26,11 @@ class TimerPicker extends StatelessWidget {
                   TextStyle(fontSize: 45, fontWeight: FontWeight.w600),
               isShowSeconds: true,
               onTimeChange: (time) {
-                hourGlassTimer.originalDuration = Duration(
+                timerPickerData.originalDuration = Duration(
                     hours: time.hour,
                     minutes: time.minute,
                     seconds: time.second);
-                hourGlassTimer.dateTime =
+                timerPickerData.dateTime =
                     DateTime(0, 0, 0, time.hour, time.minute, time.second);
               },
             )));

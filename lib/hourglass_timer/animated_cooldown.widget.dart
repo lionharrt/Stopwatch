@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/hourglass_timer/custom_timer_painter.widget.dart';
-import 'package:hello_world/hourglass_timer/hourglass_timer.class.dart';
 import 'package:hello_world/common/displays_time.mixin.dart';
 
 class AnimatedCooldown extends StatelessWidget with DisplaysTime {
-  final HourGlassTimer hourGlassTimer;
-  const AnimatedCooldown({this.hourGlassTimer, Key key}) : super(key: key);
+  final AnimationController animationController;
+  final bool isFinished;
+  final Duration changingDuration;
+  const AnimatedCooldown(
+      {this.animationController,
+      this.isFinished,
+      this.changingDuration,
+      Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +31,7 @@ class AnimatedCooldown extends StatelessWidget with DisplaysTime {
                         Positioned.fill(
                           child: CustomPaint(
                               painter: CustomTimerPainter(
-                            animation: hourGlassTimer.controller,
+                            animation: animationController,
                             backgroundColor: Colors.white,
                             color: themeData.accentColor,
                           )),
@@ -37,10 +43,9 @@ class AnimatedCooldown extends StatelessWidget with DisplaysTime {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                hourGlassTimer.isFinished
+                                isFinished
                                     ? 'Finished'
-                                    : formatTimeHMS(
-                                        hourGlassTimer.changingDuration),
+                                    : formatTimeHMS(changingDuration),
                                 style: TextStyle(
                                     fontSize: 60.0, color: Colors.black),
                               ),

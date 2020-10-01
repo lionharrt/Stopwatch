@@ -57,8 +57,7 @@ class _HomePageState extends State<HomePage>
   Widget getTabBarPages() {
     return TabBarView(controller: tabController, children: <Widget>[
       StopWatchPage(dataStorage.stopwatchState),
-      HourGlassTimerPage(
-          dataStorage.frequentTimers, dataStorage.hourGlassTimerState),
+      HourGlassTimerPage(dataStorage.hourGlassTimerState),
     ]);
   }
 
