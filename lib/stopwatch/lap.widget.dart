@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:hello_world/common/displays_time.mixin.dart';
-import 'package:hello_world/stopwatch/stopwatch.class.dart';
+import 'package:hello_world/stopwatch/stopwatch.dart';
 
 class LapWidget extends StatelessWidget with DisplaysTime {
   final Lap lap;
